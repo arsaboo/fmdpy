@@ -106,9 +106,9 @@ def fmdpy(count, search, fmt, bitrate, multiple,
     (-b is ignored)
     """
     search = ' '.join(search)
-    click.echo(search)
+    print(search)
     if 'jiosaavn.com/song/' in search:
-        click.echo("search is {}. ".format(search))
+        print("search is {}. ".format(search))
         get_song_id(search)
         sys.exit(0  )
     if 'spotify.com/playlist' in search:
