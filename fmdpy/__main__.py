@@ -48,7 +48,6 @@ def version(ctx, _, value):
         click.echo(f"fmdpy: {VERSION} ({sys.executable})")
         ctx.exit()
 
-
 # This is needed for cli (too-many-arguments and too-many-locals)
 # pylint: disable=too-many-arguments disable=too-many-locals
 @click.command()
@@ -73,6 +72,9 @@ def version(ctx, _, value):
 @click.option('-l', "--lyrics", help="Add lyrics",
               default=ast.literal_eval(config['DL_OPTIONS']['lyrics']),
               is_flag=True)
+
+@click.option('-r', "--url", help="Track URL to be downloaded.", is_flag=True,
+              expose_value=False, is_eager=True)
 
 @click.option('-g', "--gen", help="generate the config file.", is_flag=True,
         callback=gen, expose_value=False, is_eager=True)
@@ -104,6 +106,10 @@ def fmdpy(count, search, fmt, bitrate, multiple,
     (-b is ignored)
     """
     search = ' '.join(search)
+    if 'jiosaavn.com/song/' in search:
+        print(search)
+        get_song_id(search)
+        sys.exit(0  )
     if 'spotify.com/playlist' in search:
         pl_spotify_dl(search, dlformat=fmt, bitrate=bitrate,
                       addlyrics=lyrics)

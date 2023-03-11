@@ -1,14 +1,21 @@
 """api for fetching song metadata and url."""
+import asyncio
+import json
+
 import requests
-from fmdpy import headers, ART
+from jiosaavn import JioSaavn
+
+from fmdpy import ART, headers
 from fmdpy.song import Song
 
+saavn = JioSaavn()
 
 def parse_query(query_json):
     """Set metadata and return Song obj list."""
     song_list = []
     for sng_raw in query_json['results']:
         song_id = sng_raw['id']
+        print(song_id)
         song_title = sng_raw['title']
         song_year = sng_raw['year']
         song_album = sng_raw['more_info']['album']
@@ -23,6 +30,20 @@ def parse_query(query_json):
         song_list.append(song_)
     return song_list
 
+# write a function to get jiosaavn song_id from url
+
+def get_song_id(url):
+    """Get song_id from url."""
+    data = asyncio.run(saavn.get_song_details(url))
+    print(json.dumps(data, indent=4))
+
+def query_songid(song_id):
+    """Fetch songs from song_id."""
+
+    req = requests.get(
+        headers=headers,
+        url=f"https://www.jiosaavn.com/api.php?__call=song.getDetails&cc=in&_marker=0%3F_marker%3D0&_format=json&pids={song_id}")
+    return parse_query(req.json())
 
 def query(query_text, max_results=5):
     """Fetch songs from query."""
