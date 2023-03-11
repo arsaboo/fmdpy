@@ -15,7 +15,6 @@ def parse_query(query_json):
     song_list = []
     for sng_raw in query_json['results']:
         song_id = sng_raw['id']
-        print(song_id)
         song_title = sng_raw['title']
         song_year = sng_raw['year']
         song_album = sng_raw['more_info']['album']
@@ -30,12 +29,26 @@ def parse_query(query_json):
         song_list.append(song_)
     return song_list
 
-# write a function to get jiosaavn song_id from url
-
-def get_song_id(url):
+def parse_song_url(url):
     """Get song_id from url."""
     data = asyncio.run(saavn.get_song_details(url))
-    return query_songid(data['songs'][0]['id'])
+    song_list = []
+    for sng_raw in data['songs']:
+        song_id = sng_raw['id']
+        song_title = sng_raw['title']
+        song_year = sng_raw['year']
+        song_album = sng_raw['more_info']['album']
+        song_copyright = sng_raw['more_info']['copyright_text']
+        if len(sng_raw['more_info']['artistMap']['primary_artists']) != 0:
+            song_artist = sng_raw['more_info']['artistMap']['primary_artists'][0]['name']
+        else:
+            song_artist = "Unknown"
+        song_ = Song(songid=song_id,
+                        title=song_title, artist=song_artist, year=song_year,
+                        album=song_album, copyright=song_copyright)
+        song_list.append(song_)
+    return song_list
+
 
 def query_songid(song_id):
     """Fetch songs from song_id."""

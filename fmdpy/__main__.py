@@ -13,7 +13,7 @@ if (len(sys.argv) > 1) and (sys.argv[1] in {'-u', '--update'}):
 
 try:
     import click
-    from fmdpy.api import query, get_song_urls, get_song_id
+    from fmdpy.api import query, get_song_urls, parse_song_url
     from fmdpy.download import main_dl, get_lyric
     from fmdpy.splist import pl_spotify_dl
 except ModuleNotFoundError:
@@ -110,7 +110,8 @@ def fmdpy(count, search, fmt, bitrate, multiple,
     print(search)
     if 'jiosaavn.com/song/' in search:
         print("search is {}. ".format(search))
-        get_song_id(search)
+        parse_song_url(search)
+        print(get_song_urls(parse_song_url(search)))
         sys.exit(0)
     if 'spotify.com/playlist' in search:
         pl_spotify_dl(search, dlformat=fmt, bitrate=bitrate,
