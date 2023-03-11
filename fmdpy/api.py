@@ -43,6 +43,7 @@ def query_songid(song_id):
     req = requests.get(
         headers=headers,
         url=f"https://www.jiosaavn.com/api.php?__call=song.getDetails&cc=in&_marker=0%3F_marker%3D0&_format=json&pids={song_id}")
+    print(req.json())
     return parse_query(req.json())
 
 def query(query_text, max_results=5):
