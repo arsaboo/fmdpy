@@ -88,7 +88,7 @@ def version(ctx, _, value):
 @click.argument('search', nargs=-1)
 
 def fmdpy(count, search, fmt, bitrate, multiple,
-        lyrics, directory, url):
+        lyrics, directory):
     """FMDPY.
 
     Download music with metadata\n
