@@ -85,9 +85,6 @@ def version(ctx, _, value):
 @click.option('-v', "--version", help="display version", is_flag=True,
         callback=version, expose_value=False, is_eager=True)
 
-@click.option('-r', "--url", help="Track URL", is_flag=True,
-              expose_value=False, is_eager=True)
-
 @click.argument('search', nargs=-1)
 
 def fmdpy(count, search, fmt, bitrate, multiple,
@@ -108,9 +105,7 @@ def fmdpy(count, search, fmt, bitrate, multiple,
     -f native: save to native container [Default](ffmpeg not req.)
     (-b is ignored)
     """
-    if url:
-        print(url)
-        sys.exit(0)
+
     search = ' '.join(search)
     print(search)
     if 'jiosaavn.com/song/' in search:
