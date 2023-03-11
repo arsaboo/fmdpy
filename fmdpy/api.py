@@ -47,6 +47,7 @@ def query_songid(song_id):
 
 def query(query_text, max_results=5):
     """Fetch songs from query."""
+    print("query_text is {}. ".format(query_text)
     if ("fmd" in query_text) or ("liupold" in query_text):
         print(ART)
 
