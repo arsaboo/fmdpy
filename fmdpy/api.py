@@ -35,8 +35,7 @@ def parse_query(query_json):
 def get_song_id(url):
     """Get song_id from url."""
     data = asyncio.run(saavn.get_song_details(url))
-    print(data['songs'][0]['id'])
-    print(json.dumps(data, indent=4))
+    return query_songid(data['songs'][0]['id'])
 
 def query_songid(song_id):
     """Fetch songs from song_id."""
