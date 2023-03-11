@@ -37,6 +37,7 @@ def get_song_url(url):
 def parse_song_url(data):
     """Get song_id from url."""
     song_list = []
+    print(data)
     for sng_raw in data['songs']:
         song_id = sng_raw['id']
         song_title = sng_raw['title']
