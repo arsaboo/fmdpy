@@ -116,7 +116,7 @@ def fmdpy(count, search, fmt, bitrate, multiple,
     if 'jiosaavn.com/song/' in search:
         print("search is {}. ".format(search))
         get_song_id(search)
-        sys.exit(0  )
+        sys.exit(0)
     if 'spotify.com/playlist' in search:
         pl_spotify_dl(search, dlformat=fmt, bitrate=bitrate,
                       addlyrics=lyrics)
