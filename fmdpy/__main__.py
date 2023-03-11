@@ -13,7 +13,7 @@ if (len(sys.argv) > 1) and (sys.argv[1] in {'-u', '--update'}):
 
 try:
     import click
-    from fmdpy.api import query, get_song_urls, parse_song_url
+    from fmdpy.api import query, get_song_urls, get_song_url
     from fmdpy.download import main_dl, get_lyric
     from fmdpy.splist import pl_spotify_dl
 except ModuleNotFoundError:
