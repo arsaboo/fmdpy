@@ -126,6 +126,7 @@ def fmdpy(count, search, fmt, bitrate, multiple,
             stream_pool = []
 
             prompt_input = input("\nfmdpy: ")
+            print("prompt_input is {}. ".format(prompt_input))
 
             if prompt_input in ('quit', 'exit'):
                 break
