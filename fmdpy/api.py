@@ -34,8 +34,9 @@ def get_song_url(url):
     data = asyncio.run(saavn.get_song_details(url))
     return data
 
-def parse_song_url(data):
+def parse_song_url(url):
     """Get song_id from url."""
+    data = get_song_url(url)
     song_list = []
     print(data)
     for sng_raw in data['songs']:
