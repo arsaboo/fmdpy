@@ -38,21 +38,21 @@ def parse_song_url(data):
     """Get song_id from url."""
     song_list = []
     print(data)
-    for sng_raw in data['songs']:
-        song_id = sng_raw['id']
-        song_title = sng_raw['title']
-        song_year = sng_raw['year']
-        song_album = sng_raw['more_info']['album']
-        song_copyright = sng_raw['more_info']['copyright_text']
-        if len(sng_raw['more_info']['artistMap']['primary_artists']) != 0:
-            song_artist = sng_raw['more_info']['artistMap']['primary_artists'][0]['name']
-        else:
-            song_artist = "Unknown"
-        song_ = Song(songid=song_id,
-                        title=song_title, artist=song_artist, year=song_year,
-                        album=song_album, copyright=song_copyright)
-        song_list.append(song_)
-    return song_list
+    # for sng_raw in data['songs']:
+    #     song_id = sng_raw['id']
+    #     song_title = sng_raw['title']
+    #     song_year = sng_raw['year']
+    #     song_album = sng_raw['more_info']['album']
+    #     song_copyright = sng_raw['more_info']['copyright_text']
+    #     if len(sng_raw['more_info']['artistMap']['primary_artists']) != 0:
+    #         song_artist = sng_raw['more_info']['artistMap']['primary_artists'][0]['name']
+    #     else:
+    #         song_artist = "Unknown"
+    #     song_ = Song(songid=song_id,
+    #                     title=song_title, artist=song_artist, year=song_year,
+    #                     album=song_album, copyright=song_copyright)
+    #     song_list.append(song_)
+    # return song_list
 
 def query_songid(song_id):
     """Fetch songs from song_id."""
