@@ -127,6 +127,8 @@ def fmdpy(count, search, fmt, bitrate, multiple,
 
             prompt_input = input("\nfmdpy: ")
             print("prompt_input is {}. ".format(prompt_input))
+            if 'jiosaavn.com/song/' in prompt_input:
+                print("jiosaavn prompt_input is {}. ".format(prompt_input))
 
             if prompt_input in ('quit', 'exit'):
                 break
