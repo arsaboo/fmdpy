@@ -42,7 +42,7 @@ def parse_song_url(data):
     song_year = data['songs'][0]['year']
     song_album = data['songs'][0]['more_info']['album']
     song_copyright = data['songs'][0]['more_info']['copyright_text']
-    f len(data['songs'][0]['more_info']['artistMap']['primary_artists']) != 0:
+    if len(data['songs'][0]['more_info']['artistMap']['primary_artists']) != 0:
         song_artist = data['songs'][0]['more_info']['artistMap']['primary_artists'][0]['name']
         else:
             song_artist = "Unknown"
