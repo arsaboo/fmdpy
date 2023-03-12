@@ -32,9 +32,7 @@ def parse_query(query_json):
 def get_song_url(url):
     """Get song_id from url."""
     data = asyncio.run(saavn.get_song_details(url))
-    sng = parse_song_url(data)
-    print(sng)
-    return(sng)
+    return(parse_song_url(data))
 
 def parse_song_url(data):
     """Get song_id from url."""
