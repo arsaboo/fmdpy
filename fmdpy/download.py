@@ -14,6 +14,7 @@ from fmdpy import config, headers, utils
 def is_ffmpeg_installed():
     try:
         subprocess.check_output(['ffmpeg', '-version'])
+        print("ffmpeg is installed")
         return True
     except subprocess.CalledProcessError:
         return False
