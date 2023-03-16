@@ -17,7 +17,7 @@ def convert_audio_to_mp3(input_file_path, output_file_path, bitrate):
     process = subprocess.Popen(command, stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    print("test")
+    print("stdout: ", stdout)
     # if os.path.exists(output_file_path):
     #     print(f'{output_file_path} created successfully!')
     # else:
