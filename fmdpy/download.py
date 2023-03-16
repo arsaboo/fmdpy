@@ -13,15 +13,15 @@ from fmdpy import config, headers, utils
 def convert_audio_to_mp3(input_file_path, output_file_path, bitrate):
     command = ['ffmpeg', '-i', input_file_path, '-codec:a', 'libmp3lame',
                '-b:a', bitrate, output_file_path]
-    try:
-        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = process.communicate()
-        if process.returncode != 0:
-            raise subprocess.CalledProcessError(process.returncode, command,
-                                                stderr)
-        if not os.path.exists(output_file_path):
-            print(stdout.decode('utf-8'))
-            print(stderr.decode('utf-8'))
+    process = subprocess.Popen(command, stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE)
+    stdout, stderr = process.communicate()
+    if process.returncode != 0:
+        raise subprocess.CalledProcessError(process.returncode, command,
+                                            stderr)
+    if not os.path.exists(output_file_path):
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
 
 def dlf(url, file_name, silent=0, dltext=""):
     """Download a file to a specified loaction."""
