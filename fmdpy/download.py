@@ -11,21 +11,31 @@ from tqdm import tqdm
 from fmdpy import config, headers, utils
 
 
+def is_ffmpeg_installed():
+    try:
+        subprocess.check_output(['ffmpeg', '-version'])
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
 def convert_audio_to_mp3(input_file_path, output_file_path, bitrate):
-    command = ['ffmpeg', '-i', input_file_path, '-codec:a', 'libmp3lame',
-               '-b:a', bitrate, output_file_path]
-    process = subprocess.Popen(command, stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE)
-    stdout, stderr = process.communicate()
-    print("stdout: ", stdout)
-    # if os.path.exists(output_file_path):
-    #     print(f'{output_file_path} created successfully!')
-    # else:
-    #     print(f'Error: {output_file_path} not created!')
-    # if not process.returncode != 0:
-        # print("Error while converting audio file")
-    print(stdout.decode('utf-8'))
-    print(stderr.decode('utf-8'))
+    if not is_ffmpeg_installed():
+        print('Error: ffmpeg is not installed!')
+        return
+    command = ['ffmpeg', '-i', input_file_path, '-codec:a', 'libmp3lame', '-b:a', bitrate, output_file_path]
+    try:
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = process.communicate()
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, command, stderr)
+        print(stdout.decode('utf-8'))
+        print(stderr.decode('utf-8'))
+        if os.path.exists(output_file_path):
+            print(f'{output_file_path} created successfully!')
+        else:
+            print(f'Error: {output_file_path} not created!')
+    except subprocess.CalledProcessError as e:
+        print(f'Error: {e}')
 
 def dlf(url, file_name, silent=0, dltext=""):
     """Download a file to a specified loaction."""
