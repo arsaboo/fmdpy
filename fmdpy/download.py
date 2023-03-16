@@ -20,6 +20,7 @@ def is_ffmpeg_installed():
         return False
 
 def convert_audio_to_mp3(input_file_path, output_file_path, bitrate):
+    print("entered convert_audio_to_mp3")
     if not is_ffmpeg_installed():
         print('Error: ffmpeg is not installed!')
         return
