@@ -18,14 +18,14 @@ def convert_audio_to_mp3(input_file_path, output_file_path, bitrate):
                                stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
     print("test")
-    if os.path.exists(output_file_path):
-        print(f'{output_file_path} created successfully!')
-    else:
-        print(f'Error: {output_file_path} not created!')
-    if not process.returncode != 0:
+    # if os.path.exists(output_file_path):
+    #     print(f'{output_file_path} created successfully!')
+    # else:
+    #     print(f'Error: {output_file_path} not created!')
+    # if not process.returncode != 0:
         print("Error while converting audio file")
-        print(stdout.decode('utf-8'))
-        print(stderr.decode('utf-8'))
+    print(stdout.decode('utf-8'))
+    print(stderr.decode('utf-8'))
 
 def dlf(url, file_name, silent=0, dltext=""):
     """Download a file to a specified loaction."""
