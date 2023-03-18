@@ -1,6 +1,5 @@
 """Downloader for fmdpy."""
 import os
-import subprocess
 import tempfile
 
 import lyricsgenius
