@@ -15,18 +15,19 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
         input_audio = AudioSegment.from_file(input_file_path, "mp4")
     except FileNotFoundError:
         print(f"Input file {input_file_path} not found.")
-        return
+        return False
     except Exception as e:
         print(f"Error reading input file {input_file_path}: {e}")
-        return
+        return False
     try:
         input_audio.export(output_file_path, format=dlformat, bitrate=bitrate)
+        return True
     except FileNotFoundError:
         print(f"Output file path {output_file_path} not found.")
-        return
+        return False
     except Exception as e:
         print(f"Error writing output file {output_file_path}: {e}")
-        return
+        return False
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     """Download a file to a specified loaction."""
@@ -103,10 +104,14 @@ def main_dl(
             if not stat:
                 return stat
 
+            conversion_success = True
             if dlformat != 'native':
                 output_file += f".{dlformat}"
                 # convert to desired format.
-                convert_audio(tf_song.name, output_file, f'{bitrate}k', dlformat)
+                conversion_success = convert_audio(tf_song.name, output_file, f'{bitrate}k', dlformat)
+                if not conversion_success:
+                    print(f"[ERROR]: Failed to convert {tf_song.name} to {output_file}")
+                    return False
             else:
                 output_file += '.mp4'
                 if not os.path.isfile(output_file):
@@ -117,21 +122,31 @@ def main_dl(
                         f"[WARNING]: File {output_file + '.mp4'} exist, skipping")
                     return False
 
+            # Verify the file exists before trying to tag it
+            if not os.path.isfile(output_file):
+                print(f"[ERROR]: Output file {output_file} does not exist")
+                return False
+
             # add music tags
-            file_obj = music_tag.load_file(output_file)
-            file_obj['year'] = song_obj.year
-            file_obj['title'] = song_obj.title
-            file_obj['artist'] = song_obj.artist
-            file_obj['album'] = song_obj.album
-            file_obj['comment'] = song_obj.copyright \
-                + ', downloaded using (https://github.com/Liupold/fmdpy)'
-            file_obj['album'] = song_obj.album
-            file_obj['artwork'] = tf_thumb.read()
-            if addlyrics:
-                song_lyric = get_lyric(song_obj)
-                if song_lyric:
-                    file_obj['lyrics'] = song_lyric
-            file_obj.save()
+            try:
+                file_obj = music_tag.load_file(output_file)
+                file_obj['year'] = song_obj.year
+                file_obj['title'] = song_obj.title
+                file_obj['artist'] = song_obj.artist
+                file_obj['album'] = song_obj.album
+                file_obj['comment'] = song_obj.copyright \
+                    + ', downloaded using (https://github.com/Liupold/fmdpy)'
+                file_obj['album'] = song_obj.album
+                file_obj['artwork'] = tf_thumb.read()
+                if addlyrics:
+                    song_lyric = get_lyric(song_obj)
+                    if song_lyric:
+                        file_obj['lyrics'] = song_lyric
+                file_obj.save()
+            except Exception as e:
+                print(f"[ERROR]: Failed to add tags to {output_file}: {e}")
+                return False
+
     if len(to_delete) > 0:
         _ = [os.unlink(fname) for fname in to_delete]
     return True
