@@ -37,6 +37,8 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
     with open(file_name, "wb") as file_obj:
         response = requests.get(url, headers=headers, stream=True)
+        logging.info(f"HTTP status: {response.status_code}")
+        logging.info(f"Response headers: {response.headers}")
         total_length = response.headers.get('content-length')
 
         if (total_length is None) or (silent):  # no content length header
@@ -52,6 +54,13 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
                         return False
     file_size = os.path.getsize(file_name)
     logging.info(f"Downloaded file size: {file_size} bytes -> {file_name}")
+    if file_size < 1024:  # If file is suspiciously small, log first 200 bytes as text
+        with open(file_name, 'rb') as f:
+            snippet = f.read(200)
+            try:
+                logging.warning(f"File content preview: {snippet.decode(errors='replace')}")
+            except Exception:
+                logging.warning(f"File content preview (raw bytes): {snippet}")
     return True
 
 def get_lyric(song_obj):
