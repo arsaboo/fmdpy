@@ -37,9 +37,10 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
     clean_url = url.strip()
-    clean_file_name = os.path.abspath(file_name.strip())
-    if clean_file_name.endswith('.mp4'):
-        # Use curl for mp4 files
+    # Use a safe file name for curl if .mp4
+    if file_name.endswith('.mp4'):
+        base_name = os.path.basename(file_name)
+        safe_file_name = os.path.join(os.getcwd(), base_name)
         curl_cmd = [
             'curl', clean_url,
             '-H', 'sec-ch-ua-platform: "Windows"',
@@ -49,22 +50,25 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
             '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
             '-H', 'DNT: 1',
             '-H', 'Range: bytes=0-',
-            '--output', clean_file_name
+            '--output', safe_file_name
         ]
         logging.info(f"Running curl: {curl_cmd}")
         result = subprocess.run(curl_cmd, capture_output=True, shell=False)
         if result.returncode != 0:
             logging.error(f"curl failed: {result.stderr.decode(errors='replace')}\nCMD: {curl_cmd}")
             return False
-        file_size = os.path.getsize(clean_file_name)
-        logging.info(f"Downloaded file size (curl): {file_size} bytes -> {clean_file_name}")
+        file_size = os.path.getsize(safe_file_name)
+        logging.info(f"Downloaded file size (curl): {file_size} bytes -> {safe_file_name}")
         if file_size < 1024:
-            with open(clean_file_name, 'rb') as f:
+            with open(safe_file_name, 'rb') as f:
                 snippet = f.read(200)
                 try:
                     logging.warning(f"File content preview: {snippet.decode(errors='replace')}")
                 except Exception:
                     logging.warning(f"File content preview (raw bytes): {snippet}")
+        # Move the file to the requested file_name if needed
+        if safe_file_name != file_name:
+            os.replace(safe_file_name, file_name)
         return True
 
     # Use only the headers from the working curl command
