@@ -35,19 +35,19 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
-    # Set headers to mimic a browser and curl
-    custom_headers = headers.copy() if 'headers' in globals() else {}
-    custom_headers['User-Agent'] = (
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36')
-    custom_headers['Referer'] = url
-    custom_headers['Range'] = 'bytes=0-'
-    custom_headers['DNT'] = '1'
-    custom_headers['sec-ch-ua'] = '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"'
-    custom_headers['sec-ch-ua-mobile'] = '?0'
-    custom_headers['sec-ch-ua-platform'] = '"Windows"'
-
+    # Use only the headers from the working curl command
+    custom_headers = {
+        'sec-ch-ua-platform': '"Windows"',
+        'Referer': url,
+        'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+        'sec-ch-ua-mobile': '?0',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+        'DNT': '1',
+        'Range': 'bytes=0-'
+    }
+    session = requests.Session()
     with open(file_name, "wb") as file_obj:
-        response = requests.get(url, headers=custom_headers, stream=True)
+        response = session.get(url, headers=custom_headers, stream=True)
         logging.info(f"HTTP status: {response.status_code}")
         logging.info(f"Response headers: {response.headers}")
         total_length = response.headers.get('content-length')
@@ -69,7 +69,7 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         with open(file_name, 'rb') as f:
             snippet = f.read(200)
             try:
-                logging.warning(f"File content preview: {snippet.decode(errors='replace')}")
+                logging.warning(f"File content preview: {snippet.decode(errors='replace')}" )
             except Exception:
                 logging.warning(f"File content preview (raw bytes): {snippet}")
     return True
