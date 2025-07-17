@@ -44,6 +44,8 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     if file_name.endswith('.mp4'):
         base_name = os.path.basename(file_name)
         safe_file_name = os.path.join(os.getcwd(), base_name)
+        logging.info(f"Original file_name: {file_name}")
+        logging.info(f"Safe file_name: {safe_file_name}")
         curl_cmd = [
             'curl', clean_url,
             '-H', 'sec-ch-ua-platform: "Windows"',
@@ -70,8 +72,19 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
                 except Exception:
                     logging.warning(f"File content preview (raw bytes): {snippet}")
         # Move the file to the requested file_name if needed
+        logging.info(f"Checking if move needed: {safe_file_name} != {file_name}")
         if safe_file_name != file_name:
-            os.replace(safe_file_name, file_name)
+            logging.info(f"Moving file from {safe_file_name} to {file_name}")
+            logging.info(f"File exists before move: {os.path.exists(safe_file_name)}")
+            try:
+                os.replace(safe_file_name, file_name)
+                logging.info("File moved successfully")
+                logging.info(f"File exists after move: {os.path.exists(file_name)}")
+            except Exception as e:
+                logging.error(f"Failed to move file: {e}")
+                return False
+        else:
+            logging.info("No move needed, files are the same")
         return True
 
     # Use only the headers from the working curl command
