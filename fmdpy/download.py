@@ -40,9 +40,9 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         # Use curl for mp4 files
         curl_cmd = [
             'curl', url,
-            '-H', 'sec-ch-ua-platform: \"Windows\"',
+            '-H', 'sec-ch-ua-platform: "Windows"',
             '-H', f'Referer: {url}',
-            '-H', 'sec-ch-ua: \"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"',
+            '-H', 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
             '-H', 'sec-ch-ua-mobile: ?0',
             '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
             '-H', 'DNT: 1',
@@ -52,7 +52,7 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         logging.info(f"Running curl: {' '.join(curl_cmd)}")
         result = subprocess.run(curl_cmd, capture_output=True)
         if result.returncode != 0:
-            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}")
+            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}\nCMD: {' '.join(curl_cmd)}")
             return False
         file_size = os.path.getsize(file_name)
         logging.info(f"Downloaded file size (curl): {file_size} bytes -> {file_name}")
