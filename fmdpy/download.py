@@ -35,17 +35,12 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
         return False
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
-    logging.info(f"Download URL: {url}")
-    logging.info(f"URL repr: {repr(url)}")
     # Clean URL more aggressively - remove any non-printable characters
     clean_url = ''.join(char for char in url if ord(char) >= 32 and ord(char) < 127)
-    logging.info(f"Cleaned URL: {clean_url}")
     # Use a safe file name for curl if .mp4
     if file_name.endswith('.mp4'):
         base_name = os.path.basename(file_name)
         safe_file_name = os.path.join(os.getcwd(), base_name)
-        logging.info(f"Original file_name: {file_name}")
-        logging.info(f"Safe file_name: {safe_file_name}")
         curl_cmd = [
             'curl', clean_url,
             '-H', 'sec-ch-ua-platform: "Windows"',
@@ -57,13 +52,11 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
             '-H', 'Range: bytes=0-',
             '--output', safe_file_name
         ]
-        logging.info(f"Running curl: {curl_cmd}")
         result = subprocess.run(curl_cmd, capture_output=True, shell=False)
         if result.returncode != 0:
-            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}\nCMD: {curl_cmd}")
+            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}")
             return False
         file_size = os.path.getsize(safe_file_name)
-        logging.info(f"Downloaded file size (curl): {file_size} bytes -> {safe_file_name}")
         if file_size < 1024:
             with open(safe_file_name, 'rb') as f:
                 snippet = f.read(200)
@@ -72,19 +65,12 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
                 except Exception:
                     logging.warning(f"File content preview (raw bytes): {snippet}")
         # Move the file to the requested file_name if needed
-        logging.info(f"Checking if move needed: {safe_file_name} != {file_name}")
         if safe_file_name != file_name:
-            logging.info(f"Moving file from {safe_file_name} to {file_name}")
-            logging.info(f"File exists before move: {os.path.exists(safe_file_name)}")
             try:
                 os.replace(safe_file_name, file_name)
-                logging.info("File moved successfully")
-                logging.info(f"File exists after move: {os.path.exists(file_name)}")
             except Exception as e:
                 logging.error(f"Failed to move file: {e}")
                 return False
-        else:
-            logging.info("No move needed, files are the same")
         return True
 
     # Use only the headers from the working curl command
@@ -100,8 +86,6 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     session = requests.Session()
     with open(file_name, "wb") as file_obj:
         response = session.get(url, headers=custom_headers, stream=True)
-        logging.info(f"HTTP status: {response.status_code}")
-        logging.info(f"Response headers: {response.headers}")
         total_length = response.headers.get('content-length')
 
         if (total_length is None) or (silent):  # no content length header
@@ -116,7 +100,6 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
                         logging.warning("Download stopped by signal.")
                         return False
     file_size = os.path.getsize(file_name)
-    logging.info(f"Downloaded file size: {file_size} bytes -> {file_name}")
     if file_size < 1024:  # If file is suspiciously small, log first 200 bytes as text
         with open(file_name, 'rb') as f:
             snippet = f.read(200)
