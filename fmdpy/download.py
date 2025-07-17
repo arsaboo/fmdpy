@@ -37,7 +37,7 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
     clean_url = url.strip()
-    clean_file_name = file_name.strip()
+    clean_file_name = os.path.abspath(file_name.strip())
     if clean_file_name.endswith('.mp4'):
         # Use curl for mp4 files
         curl_cmd = [
