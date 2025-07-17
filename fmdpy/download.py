@@ -1,6 +1,7 @@
 """Downloader for fmdpy."""
 import os
 import tempfile
+import logging
 
 import lyricsgenius
 import music_tag
@@ -10,26 +11,30 @@ from tqdm import tqdm
 from fmdpy import config, headers, utils
 from fmdpy.api import get_song_urls
 
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='[%(levelname)s] %(message)s')
+
 def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
     try:
         input_audio = AudioSegment.from_file(input_file_path, "mp4")
     except FileNotFoundError:
         print(f"Input file {input_file_path} not found.")
-        return
+        return False
     except Exception as e:
         print(f"Error reading input file {input_file_path}: {e}")
-        return
+        return False
     try:
         input_audio.export(output_file_path, format=dlformat, bitrate=bitrate)
+        return True
     except FileNotFoundError:
         print(f"Output file path {output_file_path} not found.")
-        return
+        return False
     except Exception as e:
         print(f"Error writing output file {output_file_path}: {e}")
-        return
+        return False
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
-    """Download a file to a specified loaction."""
+    logging.info(f"Download URL: {url}")
     with open(file_name, "wb") as file_obj:
         response = requests.get(url, headers=headers, stream=True)
         total_length = response.headers.get('content-length')
@@ -37,20 +42,16 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         if (total_length is None) or (silent):  # no content length header
             file_obj.write(response.content)
         else:
-            #dl_length = 0
             total_length = int(total_length)
             with tqdm(desc=dltext, total=total_length, \
                     leave=True, unit_scale=True, unit='B') as pbar:
                 for data in response.iter_content(chunk_size=4096):
                     pbar.update(file_obj.write(data))
                     if stop_sig and stop_sig.is_set():
+                        logging.warning("Download stopped by signal.")
                         return False
-                # dl_length = len(data)
-                #done = int(50 * dl_length / total_length)
-                #sys.stdout.write("\r%s[%s%s](%.2f%%)" % (
-                #    dltext, '=' * done, ' ' * (50 - done),
-                #            (dl_length / total_length) * 100))
-                #sys.stdout.flush()
+    file_size = os.path.getsize(file_name)
+    logging.info(f"Downloaded file size: {file_size} bytes -> {file_name}")
     return True
 
 def get_lyric(song_obj):
@@ -103,10 +104,14 @@ def main_dl(
             if not stat:
                 return stat
 
+            conversion_success = True
             if dlformat != 'native':
                 output_file += f".{dlformat}"
                 # convert to desired format.
-                convert_audio(tf_song.name, output_file, f'{bitrate}k', dlformat)
+                conversion_success = convert_audio(tf_song.name, output_file, f'{bitrate}k', dlformat)
+                if not conversion_success:
+                    print(f"[ERROR]: Failed to convert {tf_song.name} to {output_file}")
+                    return False
             else:
                 output_file += '.mp4'
                 if not os.path.isfile(output_file):
@@ -117,21 +122,33 @@ def main_dl(
                         f"[WARNING]: File {output_file + '.mp4'} exist, skipping")
                     return False
 
-            # add music tags
-            file_obj = music_tag.load_file(output_file)
-            file_obj['year'] = song_obj.year
-            file_obj['title'] = song_obj.title
-            file_obj['artist'] = song_obj.artist
-            file_obj['album'] = song_obj.album
-            file_obj['comment'] = song_obj.copyright \
-                + ', downloaded using (https://github.com/Liupold/fmdpy)'
-            file_obj['album'] = song_obj.album
-            file_obj['artwork'] = tf_thumb.read()
-            if addlyrics:
-                song_lyric = get_lyric(song_obj)
-                if song_lyric:
-                    file_obj['lyrics'] = song_lyric
-            file_obj.save()
+            # Verify the file exists before trying to tag it
+            if not os.path.isfile(output_file):
+                print(f"[ERROR]: Output file {output_file} does not exist")
+                return False
+
+            # Try to tag the file, catch NotImplementedError for unsupported formats
+            try:
+                file_obj = music_tag.load_file(output_file)
+                file_obj['year'] = song_obj.year
+                file_obj['title'] = song_obj.title
+                file_obj['artist'] = song_obj.artist
+                file_obj['album'] = song_obj.album
+                file_obj['comment'] = song_obj.copyright \
+                    + ', downloaded using (https://github.com/Liupold/fmdpy)'
+                file_obj['album'] = song_obj.album
+                file_obj['artwork'] = tf_thumb.read()
+                if addlyrics:
+                    song_lyric = get_lyric(song_obj)
+                    if song_lyric:
+                        file_obj['lyrics'] = song_lyric
+                file_obj.save()
+            except NotImplementedError:
+                print(f"[WARNING]: Tagging is not supported for this file format: {output_file}")
+            except Exception as e:
+                print(f"[ERROR]: Failed to add tags to {output_file}: {e}")
+                return False
+
     if len(to_delete) > 0:
         _ = [os.unlink(fname) for fname in to_delete]
     return True
