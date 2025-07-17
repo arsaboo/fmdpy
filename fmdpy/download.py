@@ -55,16 +55,22 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         curl_cmd.insert(-2, '-H')
         curl_cmd.insert(-2, 'Range: bytes=0-')
 
-    # Add progress bar for non-silent downloads
-    if not silent and dltext:
-        curl_cmd.extend(['--progress-bar'])
-    else:
-        curl_cmd.extend(['-s'])  # Silent mode
+    # Run curl (remove progress bar options for cleaner output)
+    if not silent:
+        if file_name.endswith('.mp4'):
+            print(f"SONG: ({dltext.split('(')[1].split(')')[0] if '(' in dltext else ''}): Downloading...", end='', flush=True)
+        else:
+            print(f"ART : ({dltext.split('(')[1].split(')')[0] if '(' in dltext else ''}): Downloading...", end='', flush=True)
 
-    result = subprocess.run(curl_cmd, capture_output=True, shell=False)
+    result = subprocess.run(curl_cmd + ['-s'], capture_output=True, shell=False)
     if result.returncode != 0:
+        if not silent:
+            print(" FAILED")
         logging.error(f"curl failed: {result.stderr.decode(errors='replace')}")
         return False
+
+    if not silent:
+        print(" DONE")
 
     # Move the file to the requested file_name if needed
     if safe_file_name != file_name:
