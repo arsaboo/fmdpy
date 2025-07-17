@@ -36,7 +36,10 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
-    clean_url = url.strip()
+    logging.info(f"URL repr: {repr(url)}")
+    # Clean URL more aggressively - remove any non-printable characters
+    clean_url = ''.join(char for char in url if ord(char) >= 32 and ord(char) < 127)
+    logging.info(f"Cleaned URL: {clean_url}")
     # Use a safe file name for curl if .mp4
     if file_name.endswith('.mp4'):
         base_name = os.path.basename(file_name)
