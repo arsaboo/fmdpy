@@ -40,9 +40,9 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         # Use curl for mp4 files
         curl_cmd = [
             'curl', url,
-            '-H', 'sec-ch-ua-platform: "Windows"',
+            '-H', 'sec-ch-ua-platform: \"Windows\"',
             '-H', f'Referer: {url}',
-            '-H', 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+            '-H', 'sec-ch-ua: \"Not)A;Brand\";v=\"8\", \"Chromium\";v=\"138\", \"Google Chrome\";v=\"138\"',
             '-H', 'sec-ch-ua-mobile: ?0',
             '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
             '-H', 'DNT: 1',
