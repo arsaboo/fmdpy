@@ -47,9 +47,13 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
         '-H', 'sec-ch-ua-mobile: ?0',
         '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
         '-H', 'DNT: 1',
-        '-H', 'Range: bytes=0-',
         '--output', safe_file_name
     ]
+
+    # Only add Range header for mp4 files
+    if file_name.endswith('.mp4'):
+        curl_cmd.insert(-2, '-H')
+        curl_cmd.insert(-2, 'Range: bytes=0-')
 
     # Add progress bar for non-silent downloads
     if not silent and dltext:
@@ -157,7 +161,15 @@ def main_dl(
                 file_obj['comment'] = song_obj.copyright \
                     + ', downloaded using (https://github.com/Liupold/fmdpy)'
                 file_obj['album'] = song_obj.album
-                file_obj['artwork'] = tf_thumb.read()
+
+                # Try to add artwork, but don't fail if the image is invalid
+                try:
+                    # Read from the actual temp file, not the NamedTemporaryFile object
+                    with open(tf_thumb.name, 'rb') as thumb_file:
+                        file_obj['artwork'] = thumb_file.read()
+                except Exception as artwork_error:
+                    print(f"[WARNING]: Could not add artwork: {artwork_error}")
+
                 if addlyrics:
                     song_lyric = get_lyric(song_obj)
                     if song_lyric:
