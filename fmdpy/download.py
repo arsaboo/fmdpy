@@ -35,8 +35,18 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     logging.info(f"Download URL: {url}")
+    # Set headers to mimic a browser
+    custom_headers = headers.copy() if 'headers' in globals() else {}
+    custom_headers['User-Agent'] = (
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36')
+    # Optionally set Referer to the base domain
+    from urllib.parse import urlparse
+    parsed_url = urlparse(url)
+    referer = f"{parsed_url.scheme}://{parsed_url.netloc}/"
+    custom_headers['Referer'] = referer
+
     with open(file_name, "wb") as file_obj:
-        response = requests.get(url, headers=headers, stream=True)
+        response = requests.get(url, headers=custom_headers, stream=True)
         logging.info(f"HTTP status: {response.status_code}")
         logging.info(f"Response headers: {response.headers}")
         total_length = response.headers.get('content-length')
