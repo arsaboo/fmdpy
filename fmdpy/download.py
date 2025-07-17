@@ -187,8 +187,10 @@ def main_dl(
             else:
                 output_file += '.mp4'
                 if not os.path.isfile(output_file):
-                    with open(output_file, 'wb') as file_obj:
-                        file_obj.write(tf_song.read())
+                    # Read from the actual temp file, not the NamedTemporaryFile object
+                    with open(tf_song.name, 'rb') as temp_file:
+                        with open(output_file, 'wb') as file_obj:
+                            file_obj.write(temp_file.read())
                 else:
                     print(
                         f"[WARNING]: File {output_file + '.mp4'} exist, skipping")
