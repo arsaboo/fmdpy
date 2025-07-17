@@ -49,10 +49,10 @@ def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
             '-H', 'Range: bytes=0-',
             '--output', file_name
         ]
-        logging.info(f"Running curl: {' '.join(curl_cmd)}")
-        result = subprocess.run(curl_cmd, capture_output=True)
+        logging.info(f"Running curl: {curl_cmd}")
+        result = subprocess.run(curl_cmd, capture_output=True, shell=False)
         if result.returncode != 0:
-            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}\nCMD: {' '.join(curl_cmd)}")
+            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}\nCMD: {curl_cmd}")
             return False
         file_size = os.path.getsize(file_name)
         logging.info(f"Downloaded file size (curl): {file_size} bytes -> {file_name}")
