@@ -6,10 +6,8 @@ import subprocess
 
 import lyricsgenius
 import music_tag
-import requests
 from pydub import AudioSegment
-from tqdm import tqdm
-from fmdpy import config, headers, utils
+from fmdpy import config, utils
 from fmdpy.api import get_song_urls
 
 # Setup logging
@@ -37,76 +35,41 @@ def convert_audio(input_file_path, output_file_path, bitrate, dlformat):
 def dlf(url, file_name, silent=0, dltext="", stop_sig=None):
     # Clean URL more aggressively - remove any non-printable characters
     clean_url = ''.join(char for char in url if ord(char) >= 32 and ord(char) < 127)
-    # Use a safe file name for curl if .mp4
-    if file_name.endswith('.mp4'):
-        base_name = os.path.basename(file_name)
-        safe_file_name = os.path.join(os.getcwd(), base_name)
-        curl_cmd = [
-            'curl', clean_url,
-            '-H', 'sec-ch-ua-platform: "Windows"',
-            '-H', f'Referer: {clean_url}',
-            '-H', 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-            '-H', 'sec-ch-ua-mobile: ?0',
-            '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
-            '-H', 'DNT: 1',
-            '-H', 'Range: bytes=0-',
-            '--output', safe_file_name
-        ]
-        result = subprocess.run(curl_cmd, capture_output=True, shell=False)
-        if result.returncode != 0:
-            logging.error(f"curl failed: {result.stderr.decode(errors='replace')}")
+
+    # Use curl for all downloads
+    base_name = os.path.basename(file_name)
+    safe_file_name = os.path.join(os.getcwd(), base_name)
+    curl_cmd = [
+        'curl', clean_url,
+        '-H', 'sec-ch-ua-platform: "Windows"',
+        '-H', f'Referer: {clean_url}',
+        '-H', 'sec-ch-ua: "Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
+        '-H', 'sec-ch-ua-mobile: ?0',
+        '-H', 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+        '-H', 'DNT: 1',
+        '-H', 'Range: bytes=0-',
+        '--output', safe_file_name
+    ]
+
+    # Add progress bar for non-silent downloads
+    if not silent and dltext:
+        curl_cmd.extend(['--progress-bar'])
+    else:
+        curl_cmd.extend(['-s'])  # Silent mode
+
+    result = subprocess.run(curl_cmd, capture_output=True, shell=False)
+    if result.returncode != 0:
+        logging.error(f"curl failed: {result.stderr.decode(errors='replace')}")
+        return False
+
+    # Move the file to the requested file_name if needed
+    if safe_file_name != file_name:
+        try:
+            os.replace(safe_file_name, file_name)
+        except Exception as e:
+            logging.error(f"Failed to move file: {e}")
             return False
-        file_size = os.path.getsize(safe_file_name)
-        if file_size < 1024:
-            with open(safe_file_name, 'rb') as f:
-                snippet = f.read(200)
-                try:
-                    logging.warning(f"File content preview: {snippet.decode(errors='replace')}")
-                except Exception:
-                    logging.warning(f"File content preview (raw bytes): {snippet}")
-        # Move the file to the requested file_name if needed
-        if safe_file_name != file_name:
-            try:
-                os.replace(safe_file_name, file_name)
-            except Exception as e:
-                logging.error(f"Failed to move file: {e}")
-                return False
-        return True
 
-    # Use only the headers from the working curl command
-    custom_headers = {
-        'sec-ch-ua-platform': '"Windows"',
-        'Referer': url,
-        'sec-ch-ua': '"Not)A;Brand";v="8", "Chromium";v="138", "Google Chrome";v="138"',
-        'sec-ch-ua-mobile': '?0',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
-        'DNT': '1',
-        'Range': 'bytes=0-'
-    }
-    session = requests.Session()
-    with open(file_name, "wb") as file_obj:
-        response = session.get(url, headers=custom_headers, stream=True)
-        total_length = response.headers.get('content-length')
-
-        if (total_length is None) or (silent):  # no content length header
-            file_obj.write(response.content)
-        else:
-            total_length = int(total_length)
-            with tqdm(desc=dltext, total=total_length, \
-                    leave=True, unit_scale=True, unit='B') as pbar:
-                for data in response.iter_content(chunk_size=4096):
-                    pbar.update(file_obj.write(data))
-                    if stop_sig and stop_sig.is_set():
-                        logging.warning("Download stopped by signal.")
-                        return False
-    file_size = os.path.getsize(file_name)
-    if file_size < 1024:  # If file is suspiciously small, log first 200 bytes as text
-        with open(file_name, 'rb') as f:
-            snippet = f.read(200)
-            try:
-                logging.warning(f"File content preview: {snippet.decode(errors='replace')}" )
-            except Exception:
-                logging.warning(f"File content preview (raw bytes): {snippet}")
     return True
 
 def get_lyric(song_obj):
