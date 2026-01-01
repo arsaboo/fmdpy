@@ -4,6 +4,16 @@ import tempfile
 import logging
 import subprocess
 
+try:
+    from typing import Self as _TypingSelf
+except ImportError:
+    try:
+        from typing_extensions import Self as _TypingSelf
+        import typing
+        typing.Self = _TypingSelf  # Fallback for Python < 3.11
+    except ImportError:
+        _TypingSelf = None
+
 import lyricsgenius
 import music_tag
 from pydub import AudioSegment
